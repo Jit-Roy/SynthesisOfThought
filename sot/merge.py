@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import math
 from collections import defaultdict
 
-from .models import ReasoningNode, NodeStatus
+from .nodes import ReasoningNode, NodeStatus
 from .storage import NodeStore
 
 

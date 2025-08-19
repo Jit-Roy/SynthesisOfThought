@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Iterator, Any
 from collections import defaultdict
 import time
 
-from .models import ReasoningNode, NodeStatus
+from .nodes import ReasoningNode, NodeStatus
 
 
 class NodeStore:

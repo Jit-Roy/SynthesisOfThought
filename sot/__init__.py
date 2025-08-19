@@ -3,7 +3,7 @@ Synthesis of Thought (SoT) package.
 A framework for multi-path reasoning synthesis rather than single-path selection.
 """
 
-from .models import ReasoningNode, NodeMetadata, SamplingInfo, NodeStatus
+from .nodes import ReasoningNode, NodeMetadata, SamplingInfo, NodeStatus
 from .storage import NodeStore
 from .frontier import FrontierManager, FrontierPolicy, HighestScorePolicy, UCBPolicy
 from .llm_wrapper import LLMWrapper, MockLLMWrapper

@@ -9,7 +9,7 @@ from typing import List, Optional, Protocol, Tuple, Dict, Any
 from enum import Enum
 import random
 
-from .models import ReasoningNode, NodeStatus
+from .nodes import ReasoningNode, NodeStatus
 
 
 class FrontierPolicy(ABC):

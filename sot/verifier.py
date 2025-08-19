@@ -8,7 +8,7 @@ from typing import Dict, List, Any, Optional, Tuple, Union
 import random
 import re
 
-from .models import ReasoningNode
+from .nodes import ReasoningNode
 
 
 class VerificationResult:

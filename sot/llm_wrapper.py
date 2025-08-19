@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional, Callable
 import random
 import time
 
-from .models import ReasoningNode
+from .nodes import ReasoningNode
 
 
 class LLMWrapper(ABC):

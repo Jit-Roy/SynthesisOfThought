@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional, Callable
 import time
 import logging
 
-from .models import ReasoningNode, NodeStatus, create_root_node
+from .nodes import ReasoningNode, NodeStatus, create_root_node
 from .storage import NodeStore
 from .frontier import Frontier, create_best_first_frontier
 from .llm_wrapper import LLMWrapper, MockLLMWrapper
