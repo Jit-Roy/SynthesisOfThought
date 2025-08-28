@@ -3,35 +3,38 @@ ReasoningNode implementation for Synthesis-of-Thought (SoT).
 Contains robust serialization, history helpers, and small utilities.
 """
 
-from dataclasses import dataclass, field, asdict, is_dataclass
-from typing import Optional, List, Dict, Any, Literal
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict
 from enum import Enum
 import uuid
-import json
-import time
+
+
+class NodeStatus(Enum):
+    """Status values for reasoning nodes."""
+    ACTIVE = "active"
+    PRUNED = "pruned"
+    TERMINAL_SUCCESS = "terminal_success"
+    TERMINAL_FAILURE = "terminal_failure"
+
 
 @dataclass
-class ReasoningNode:
-    """
-    A node in the reasoning tree representing a single reasoning step.
-    """
+class Node:
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    step_text: str = ""
     parent: Optional[str] = None
+    children: Optional[List[str]] = field(default_factory=list)
+    status: NodeStatus = NodeStatus.ACTIVE
+    step_text: str = ""
     depth: int = 0
-    score: float = 0.5
-    contradictions: List[str] = field(default_factory=list)  
-    children: List[str] = field(default_factory=list)
-    tokens_used: Optional[int] = None
-    consensus_count: int = 1
-    verifier_score: Optional[float] = None
-    status: Literal["active", "pruned", "terminal_success", "terminal_failure"] = "active"
-    _history_cache: Optional[List[str]] = field(default=None, repr=False)
+    history: str = ""  
 
     # --- Basic child management ---
-    def add_child(self, child_id: str) -> None:
+    def add_child(self, child_id: str, node_store: Dict[str, "Node"], summarizer=None) -> None:
         if child_id not in self.children:
             self.children.append(child_id)
+        child = node_store.get(child_id)
+        if child is not None:
+            child.parent = self.id  # ensure back-link
+            child.update_history(node_store, summarizer)
 
     def remove_child(self, child_id: str) -> None:
         if child_id in self.children:
@@ -44,51 +47,41 @@ class ReasoningNode:
         return self.parent is None
 
     def mark_terminal(self, success: bool = True) -> None:
-        self.status = "terminal_success" if success else "terminal_failure"
+        self.status = NodeStatus.TERMINAL_SUCCESS if success else NodeStatus.TERMINAL_FAILURE
 
     def mark_pruned(self) -> None:
-        self.status = "pruned"
-
-    def update_score(self, new_score: float) -> None:
-        self.score = max(0.0, min(1.0, float(new_score)))
-
-    def add_contradiction(self, contradiction: str) -> None:
-        if contradiction not in self.contradictions:
-            self.contradictions.append(contradiction)
+        self.status = NodeStatus.PRUNED
 
     # --- History / trace helpers ---
-    def trace(self, node_store: Dict[str, "ReasoningNode"]) -> List[str]:
-        """
-        Return the list of step_text strings from root -> this node.
-        Requires node_store: mapping of id -> ReasoningNode.
-        """
+    def trace(self, node_store: Dict[str, "Node"]) -> List[str]:
         path_texts = []
+        visited = set()
         cur = self
-        # Walk up to root
-        while cur is not None:
+        while cur is not None and cur.id not in visited:
+            visited.add(cur.id)
             path_texts.append(cur.step_text)
             if cur.parent is None:
                 break
             cur = node_store.get(cur.parent)
         return list(reversed(path_texts))
-
-
-# Helper functions to create nodes
-def create_root_node(question: str) -> ReasoningNode:
-    return ReasoningNode(
-        step_text=f"Q: {question}",
-        depth=0,
-        score=1.0,
-        parent=None
-    )
-
-
-def create_child_node(parent: ReasoningNode, step_text: str, score: float = 0.5) -> ReasoningNode:
-    child = ReasoningNode(
-        step_text=step_text,
-        parent=parent.id,
-        depth=parent.depth + 1,
-        score=score
-    )
-    parent.add_child(child.id)
-    return child
+    
+    def update_history(self, node_store: Dict[str, "Node"], summarizer=None) -> None:
+        """
+        Refresh the node's history as a simple string.
+        - If summarizer is None: join full path with " → ".
+        - If summarizer is provided: summary + last few steps as a string.
+        """
+        full_path = self.trace(node_store)
+        if summarizer is None:
+            self.history = " → ".join(full_path)
+        else:
+            try:
+                summary = summarizer(full_path[:-3]) if len(full_path) > 3 else None
+                recent = full_path[-3:]
+                if summary:
+                    self.history = summary + " → " + " → ".join(recent)
+                else:
+                    self.history = " → ".join(recent)
+            except Exception:
+                # fallback to full path
+                self.history = " → ".join(full_path)
