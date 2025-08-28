@@ -8,9 +8,11 @@ from .frontier import (
     Frontier, 
     FrontierPolicy, 
     DepthFirstPolicy, 
-    BreadthFirstPolicy,
-    SmartBranchingPolicy,
-    BranchingDecisionFramework
+    BreadthFirstPolicy
+)
+from .branching import (
+    BranchingDecisionFramework,
+    SmartBranchingPolicy
 )
 from .llm import LLM
 
