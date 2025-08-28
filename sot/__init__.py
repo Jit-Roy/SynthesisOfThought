@@ -15,6 +15,8 @@ from .branching import (
     SmartBranchingPolicy
 )
 from .llm import LLM
+from .config import Config
+from .controller import Controller, create_root_node, get_store_stats
 
 __version__ = "1.0.0"
 __author__ = "SoT Team"
@@ -34,4 +36,10 @@ __all__ = [
     
     # LLM interface
     'LLM',
+    
+    # Configuration and Controller
+    'Config',
+    'Controller',
+    'create_root_node',
+    'get_store_stats',
 ]

@@ -282,7 +282,7 @@ class SmartBranchingPolicy:
     """
     
     def __init__(self, llm=None, base_policy=None):
-        from .frontier import DepthFirstPolicy  # Import here to avoid circular import
+        from .frontier import DepthFirstPolicy 
         self.branching_framework = BranchingDecisionFramework(llm)
         self.base_policy = base_policy or DepthFirstPolicy()
         self.decision_cache = {}
